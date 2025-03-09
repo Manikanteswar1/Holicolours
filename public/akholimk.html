@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>View Holi Orders</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #ff6f61, #ffcc00, #00cc99, #3399ff, #cc33ff);
+      background-size: cover;
+      color: white;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+    }
+    .container {
+      background: rgba(0, 0, 0, 0.7);
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #fff;
+    }
+    th {
+      background: #ff6f61;
+    }
+    button {
+      padding: 4px 8px; /* Smaller size */
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      margin: 0 3px;
+      font-size: 12px; /* Smaller text */
+    }
+    .deliver-btn {
+      background: #00cc99; /* Green for Delivered button */
+    }
+    .deliver-btn:hover:not(:disabled) {
+      background: #009973;
+    }
+    .spam-btn {
+        margin-top: 5px;
+      background: #ff4a3d; /* Red for Spam button */
+    }
+    .spam-btn:hover:not(:disabled) {
+      background: #cc392f;
+    }
+    button:disabled {
+      background: #666;
+      cursor: not-allowed;
+    }
+    .delivered-yes {
+      color: #00cc99; /* Green for Delivered "Yes" */
+    }
+    .delivered-no {
+      color: #ff4a3d; /* Red for Delivered "No" */
+    }
+    .spam-yes {
+      color: #ff4a3d; /* Red for Spam "Yes" */
+    }
+    .spam-no {
+      color: #00cc99; /* Green for Spam "No" */
+    }
+    #message {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Holi Orders</h1>
+    <table id="ordersTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Quantity</th>
+          <th>Phone</th>
+          <th>Address</th>
+          <th>Combo</th>
+          <th>Order Date</th>
+          <th>Delivered</th>
+          <th>Spam</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="ordersBody"></tbody>
+    </table>
+    <p id="message"></p>
+  </div>
+
+  <script>
+    async function fetchOrders() {
+      try {
+        const response = await fetch('/api/orders');
+        const orders = await response.json();
+
+        if (!response.ok) {
+          throw new Error(orders.error || 'Failed to fetch orders.');
+        }
+
+        const tbody = document.getElementById('ordersBody');
+        tbody.innerHTML = ''; // Clear existing rows
+
+        if (orders.length === 0) {
+          document.getElementById('message').textContent = 'No orders yet.';
+          return;
+        }
+
+        orders.forEach(order => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${order.id}</td>
+            <td>${order.name}</td>
+            <td>${order.quantity}</td>
+            <td>${order.phone}</td>
+            <td>${order.address}</td>
+            <td>${order.combo}</td>
+            <td>${order.orderDate}</td>
+            <td class="${order.delivered === 1 ? 'delivered-yes' : 'delivered-no'}">
+              ${order.delivered === 1 ? 'Yes' : 'No'}
+            </td>
+            <td class="${order.spam === 1 ? 'spam-yes' : 'spam-no'}">
+              ${order.spam === 1 ? 'Yes' : 'No'}
+            </td>
+            <td>
+              <button 
+                class="deliver-btn" 
+                onclick="markDelivered(${order.id})" 
+                ${order.delivered === 1 || order.spam === 1 ? 'disabled' : ''}>
+                ${order.delivered === 1 ? 'Delivered' : 'Delivered'}
+              </button>
+              <button 
+                class="spam-btn" 
+                onclick="markSpam(${order.id})" 
+                ${order.spam === 1 || order.delivered === 1 ? 'disabled' : ''}>
+                ${order.spam === 1 ? 'Spam' : 'Spam'}
+              </button>
+            </td>
+          `;
+          tbody.appendChild(row);
+        });
+      } catch (error) {
+        document.getElementById('message').textContent = error.message;
+        document.getElementById('message').style.color = '#ff4a3d';
+      }
+    }
+
+    async function markDelivered(orderId) {
+      try {
+        const response = await fetch(`/api/orders/${orderId}/deliver`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+        });
+
+        const result = await response.json();
+        if (!response.ok) {
+          throw new Error(result.error || 'Failed to update status.');
+        }
+
+        document.getElementById('message').textContent = result.message;
+        document.getElementById('message').style.color = '#00cc99';
+        fetchOrders(); // Refresh the table
+      } catch (error) {
+        document.getElementById('message').textContent = error.message;
+        document.getElementById('message').style.color = '#ff4a3d';
+      }
+    }
+
+    async function markSpam(orderId) {
+      try {
+        const response = await fetch(`/api/orders/${orderId}/spam`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+        });
+
+        const result = await response.json();
+        if (!response.ok) {
+          throw new Error(result.error || 'Failed to mark as spam.');
+        }
+
+        document.getElementById('message').textContent = result.message;
+        document.getElementById('message').style.color = '#00cc99';
+        fetchOrders(); // Refresh the table
+      } catch (error) {
+        document.getElementById('message').textContent = error.message;
+        document.getElementById('message').style.color = '#ff4a3d';
+      }
+    }
+
+    // Fetch orders when the page loads
+    window.onload = fetchOrders;
+  </script>
+</body>
+</html>

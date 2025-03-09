@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Holi Colors Combo Booking</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #ff6f61, #ffcc00, #00cc99, #3399ff, #cc33ff);
+      background-size: cover;
+      background-attachment: fixed;
+      color: white;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .container {
+      background: rgba(0, 0, 0, 0.7);
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 400px;
+      width: 100%;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 5px;
+      box-sizing: border-box;
+    }
+    button {
+      background: #ff6f61;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      margin-top: 20px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #ff4a3d;
+    }
+    #message {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Book Your Holi 5-Colour Combo!</h1>
+    <form id="bookingForm">
+      <input type="text" id="name" placeholder="Your Name" required>
+      <input type="tel" id="phone" placeholder="Your Phone Number" pattern="[0-9]{10}" title="Enter a 10-digit phone number" required>
+      <input type="text" id="address" placeholder="Block & Room No (ex: VE-101)" required>
+      <select id="quantity" required>
+        <option value="" disabled selected>Select Quantity</option>
+        <option value="1">1 Combo</option>
+        <option value="2">2 Combos</option>
+        <option value="3">3 Combos</option>
+        <option value="4">4 Combos</option>
+        <option value="5">5 Combos</option>
+        <option value="6">6 Combos</option>
+        <option value="7">7 Combos</option>
+        <option value="8">8 Combos</option>
+        <option value="9">9 Combos</option>
+        <option value="10">10 Combos</option>
+      </select>
+      <button type="submit">Book Now</button>
+    </form>
+    <p id="message"></p>
+  </div>
+
+  <script>
+    function displayMessage(message, isError = false) {
+      const messageElement = document.getElementById('message');
+      messageElement.textContent = message;
+      messageElement.style.color = isError ? '#ff4a3d' : '#00cc99';
+      setTimeout(() => messageElement.textContent = '', 5000);
+    }
+
+    document.getElementById('bookingForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const order = {
+        name: document.getElementById('name').value.trim(),
+        phone: document.getElementById('phone').value.trim(),
+        address: document.getElementById('address').value.trim(),
+        quantity: document.getElementById('quantity').value,
+        orderDate: new Date().toLocaleString(),
+      };
+
+      try {
+        const response = await fetch('/api/order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(order),
+        });
+
+        const result = await response.json();
+        if (response.ok) {
+          displayMessage(result.message);
+          document.getElementById('bookingForm').reset();
+        } else {
+          displayMessage(result.error || 'Something went wrong.', true);
+        }
+      } catch (error) {
+        displayMessage('Network error. Please try again.', true);
+        console.error('Error:', error);
+      }
+    });
+  </script>
+</body>
+</html>
