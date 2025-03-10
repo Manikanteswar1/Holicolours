@@ -1,5 +1,4 @@
-require('dotenv').config(); // Load environment variables
-
+require('dotenv').config(); // Load environment variables from .env
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
@@ -9,9 +8,8 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI;
 
-// Check if MONGO_URI is set
 if (!MONGO_URI) {
-  console.error("❌ Error: MONGO_URI is not defined. Check your .env file.");
+  console.error('Error: MONGO_URI is not defined. Check your .env file.');
   process.exit(1);
 }
 
@@ -21,11 +19,11 @@ app.use(bodyParser.json());
 app.use(express.static('public'));
 
 // Connect to MongoDB
-mongoose.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(MONGO_URI)
   .then(() => console.log('✅ Connected to MongoDB'))
   .catch(err => {
     console.error('❌ MongoDB connection error:', err);
-    process.exit(1);
+    process.exit(1); // Exit if connection fails
   });
 
 // Define Order Schema
@@ -39,7 +37,6 @@ const orderSchema = new mongoose.Schema({
   delivered: { type: Boolean, default: false },
   spam: { type: Boolean, default: false }
 });
-
 const Order = mongoose.model('Order', orderSchema);
 
 // API to Save Orders
@@ -49,7 +46,6 @@ app.post('/api/order', async (req, res) => {
     if (!name || !phone || !address || !quantity || !orderDate) {
       return res.status(400).json({ error: 'All fields are required.' });
     }
-
     const order = new Order({ name, quantity, phone, address, orderDate });
     await order.save();
     res.status(201).json({ message: '✅ Order placed successfully!' });
