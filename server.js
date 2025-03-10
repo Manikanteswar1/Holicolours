@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 require('dotenv').config();
 
 const app = express();
@@ -58,6 +59,28 @@ async function getNextOrderId() {
   return counter.sequence_value;
 }
 
+// CSV Writer Setup
+const csvWriter = createCsvWriter({
+  path: 'orders.csv',
+  header: [
+    { id: 'orderId', title: 'Order ID' },
+    { id: 'name', title: 'Name' },
+    { id: 'quantity', title: 'Quantity' },
+    { id: 'phone', title: 'Phone' },
+    { id: 'address', title: 'Address' },
+    { id: 'combo', title: 'Combo' },
+    { id: 'orderDate', title: 'Order Date' },
+    { id: 'delivered', title: 'Delivered' },
+    { id: 'spam', title: 'Spam' }
+  ],
+  append: true
+});
+
+// Function to Append Order to CSV
+async function appendOrderToCsv(order) {
+  await csvWriter.writeRecords([order]);
+}
+
 // Place an Order
 app.post('/api/order', async (req, res) => {
   try {
@@ -68,7 +91,21 @@ app.post('/api/order', async (req, res) => {
     const orderId = await getNextOrderId();
     const order = new Order({ orderId, name, quantity, phone, address, orderDate });
     await order.save();
-    res.status(201).json({ message: 'Order placed successfully!', orderId });
+
+    // Append the order to the CSV file
+    await appendOrderToCsv({
+      orderId: order.orderId,
+      name: order.name,
+      quantity: order.quantity,
+      phone: order.phone,
+      address: order.address,
+      combo: order.combo,
+      orderDate: order.orderDate,
+      delivered: order.delivered,
+      spam: order.spam
+    });
+
+    res.status(201).json({ message: 'Order placed successfully! We will contact you Soon.', orderId });
   } catch (err) {
     console.error('Error saving order:', err);
     res.status(500).json({ error: 'Failed to place order.' });

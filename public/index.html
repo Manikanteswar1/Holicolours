@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Holi Colors Combo Booking</title>
   <style>
+    /* General Styles */
     body {
       font-family: Arial, sans-serif;
       background: linear-gradient(135deg, #ff6f61, #ffcc00, #00cc99, #3399ff, #cc33ff);
@@ -16,16 +17,21 @@
       padding: 0;
       min-height: 100vh;
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
     }
+
     .container {
       background: rgba(0, 0, 0, 0.7);
       padding: 20px;
       border-radius: 10px;
+      margin-bottom: 40px;
       max-width: 400px;
-      width: 100%;
+      width: 90%;
+      margin: 20px auto;
     }
+
     input, select {
       width: 100%;
       padding: 10px;
@@ -34,6 +40,7 @@
       border-radius: 5px;
       box-sizing: border-box;
     }
+
     button {
       background: #ff6f61;
       color: white;
@@ -42,18 +49,71 @@
       margin-top: 20px;
       border-radius: 5px;
       cursor: pointer;
+      /* Button is not full-width */
     }
+
     button:hover {
       background: #ff4a3d;
     }
+
     #message {
       margin-top: 10px;
       font-weight: bold;
     }
+
     .delivery-text {
       font-size: 18px;
       font-weight: bold;
       margin-bottom: 10px;
+    }
+
+    /* Footer Styles */
+    footer {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 10px;
+      border-radius: 10px;
+      margin-top: 20px;
+      width: 90%;
+      max-width: 300px;
+      font-size: 12px;
+    }
+
+    footer a {
+      color: #ff6f61;
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* Mobile Responsiveness */
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 24px;
+      }
+
+      .delivery-text {
+        font-size: 16px;
+      }
+
+      .container {
+        padding: 15px;
+      }
+
+      input, select {
+        padding: 8px;
+        font-size: 14px;
+      }
+
+      button {
+        padding: 8px 16px;
+        font-size: 14px;
+      }
+
+      footer {
+        font-size: 12px;
+      }
     }
   </style>
 </head>
@@ -78,12 +138,17 @@
     <p id="message"></p>
   </div>
 
+  <!-- Footer -->
+  <footer>
+    <p>Developed by <a >Mani</a> | &copy; 2025 All rights reserved.</p>
+  </footer>
+
   <script>
     function displayMessage(message, isError = false) {
       const messageElement = document.getElementById('message');
       messageElement.textContent = message;
       messageElement.style.color = isError ? '#ff4a3d' : '#00cc99';
-      setTimeout(() => messageElement.textContent = '', 5000);
+      setTimeout(() => messageElement.textContent = '', 30000);
     }
 
     document.getElementById('bookingForm').addEventListener('submit', async (e) => {
