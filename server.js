@@ -1,33 +1,24 @@
-require('dotenv').config(); // Load environment variables from .env
 const express = require('express');
 const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
 const cors = require('cors');
+require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI;
 
-if (!MONGO_URI) {
-  console.error('Error: MONGO_URI is not defined. Check your .env file.');
-  process.exit(1);
-}
-
-// Middleware
-app.use(cors());
-app.use(bodyParser.json());
 app.use(express.static('public'));
+app.use(express.json());
+app.use(cors());
 
 // Connect to MongoDB
 mongoose.connect(MONGO_URI)
-  .then(() => console.log('✅ Connected to MongoDB'))
-  .catch(err => {
-    console.error('❌ MongoDB connection error:', err);
-    process.exit(1); // Exit if connection fails
-  });
+  .then(() => console.log('MongoDB connected'))
+  .catch(err => console.error('MongoDB connection error:', err));
 
-// Define Order Schema
+// Order Schema
 const orderSchema = new mongoose.Schema({
+  orderId: { type: Number, unique: true },
   name: String,
   quantity: Number,
   phone: String,
@@ -37,58 +28,79 @@ const orderSchema = new mongoose.Schema({
   delivered: { type: Boolean, default: false },
   spam: { type: Boolean, default: false }
 });
+
 const Order = mongoose.model('Order', orderSchema);
 
-// API to Save Orders
+// Counter Schema for Auto-Incrementing Order ID
+const counterSchema = new mongoose.Schema({
+  _id: String,
+  sequence_value: Number
+});
+
+const Counter = mongoose.model('Counter', counterSchema);
+
+// Initialize Counter if Not Exists
+async function initializeCounter() {
+  const counter = await Counter.findById('orderId');
+  if (!counter) {
+    await new Counter({ _id: 'orderId', sequence_value: 0 }).save();
+  }
+}
+initializeCounter();
+
+// Function to Get Next Order ID
+async function getNextOrderId() {
+  const counter = await Counter.findByIdAndUpdate(
+    'orderId',
+    { $inc: { sequence_value: 1 } },
+    { new: true, upsert: true }
+  );
+  return counter.sequence_value;
+}
+
+// Place an Order
 app.post('/api/order', async (req, res) => {
   try {
     const { name, quantity, phone, address, orderDate } = req.body;
     if (!name || !phone || !address || !quantity || !orderDate) {
       return res.status(400).json({ error: 'All fields are required.' });
     }
-    const order = new Order({ name, quantity, phone, address, orderDate });
+    const orderId = await getNextOrderId();
+    const order = new Order({ orderId, name, quantity, phone, address, orderDate });
     await order.save();
-    res.status(201).json({ message: '✅ Order placed successfully!' });
+    res.status(201).json({ message: 'Order placed successfully!', orderId });
   } catch (err) {
-    console.error('❌ Error saving order:', err);
+    console.error('Error saving order:', err);
     res.status(500).json({ error: 'Failed to place order.' });
   }
 });
 
-// API to Fetch Orders
+// Get All Orders
 app.get('/api/orders', async (req, res) => {
   try {
-    const orders = await Order.find();
-    res.status(200).json(orders);
+    const orders = await Order.find().sort({ orderId: 1 });
+    res.json(orders);
   } catch (err) {
-    console.error('❌ Error fetching orders:', err);
     res.status(500).json({ error: 'Failed to fetch orders.' });
   }
 });
 
-// API to Update Delivery Status
-app.put('/api/orders/:id/deliver', async (req, res) => {
+// Update Order Status (Delivered or Spam)
+app.put('/api/orders/:id/:action', async (req, res) => {
   try {
-    await Order.findByIdAndUpdate(req.params.id, { delivered: true });
-    res.status(200).json({ message: '✅ Order marked as delivered!' });
+    const { id, action } = req.params;
+    let updateField;
+    if (action === 'deliver') updateField = { delivered: true };
+    else if (action === 'spam') updateField = { spam: true };
+    else return res.status(400).json({ error: 'Invalid action.' });
+
+    const updatedOrder = await Order.findOneAndUpdate({ orderId: id }, updateField, { new: true });
+    if (!updatedOrder) return res.status(404).json({ error: 'Order not found.' });
+
+    res.json({ message: `Order marked as ${action}.` });
   } catch (err) {
-    console.error('❌ Error updating delivery status:', err);
-    res.status(500).json({ error: 'Failed to update delivery status.' });
+    res.status(500).json({ error: 'Failed to update order.' });
   }
 });
 
-// API to Mark Order as Spam
-app.put('/api/orders/:id/spam', async (req, res) => {
-  try {
-    await Order.findByIdAndUpdate(req.params.id, { spam: true });
-    res.status(200).json({ message: '✅ Order marked as spam!' });
-  } catch (err) {
-    console.error('❌ Error marking order as spam:', err);
-    res.status(500).json({ error: 'Failed to mark order as spam.' });
-  }
-});
-
-// Start Server
-app.listen(PORT, () => {
-  console.log(`🚀 Server is running on http://localhost:${PORT}`);
-});
+app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));

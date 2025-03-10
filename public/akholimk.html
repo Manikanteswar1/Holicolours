@@ -39,7 +39,7 @@
       border: none;
       border-radius: 3px;
       cursor: pointer;
-      margin: 0 3px;
+      margin-top: 10px;
       font-size: 12px;
     }
     .deliver-btn { background: #00cc99; }
@@ -60,7 +60,7 @@
     <table id="ordersTable">
       <thead>
         <tr>
-          <th>ID</th>
+          <th>Order ID</th> 
           <th>Name</th>
           <th>Quantity</th>
           <th>Phone</th>
@@ -86,54 +86,32 @@
         const tbody = document.getElementById('ordersBody');
         tbody.innerHTML = '';
 
-        if (orders.length === 0) {
-          document.getElementById('message').textContent = 'No orders yet.';
-          return;
-        }
-
         orders.forEach(order => {
           const row = document.createElement('tr');
           row.innerHTML = `
-            <td>${order._id}</td>
+            <td>${order.orderId}</td>
             <td>${order.name}</td>
             <td>${order.quantity}</td>
             <td>${order.phone}</td>
             <td>${order.address}</td>
             <td>${new Date(order.orderDate).toLocaleString()}</td>
-            <td class="${order.delivered ? 'delivered-yes' : 'delivered-no'}">
-              ${order.delivered ? 'Yes' : 'No'}
-            </td>
-            <td class="${order.spam ? 'spam-yes' : 'spam-no'}">
-              ${order.spam ? 'Yes' : 'No'}
-            </td>
+            <td class="${order.delivered ? 'delivered-yes' : 'delivered-no'}">${order.delivered ? 'Yes' : 'No'}</td>
+            <td class="${order.spam ? 'spam-yes' : 'spam-no'}">${order.spam ? 'Yes' : 'No'}</td>
             <td>
-              <button class="deliver-btn" onclick="updateStatus('${order._id}', 'deliver')" ${order.delivered || order.spam ? 'disabled' : ''}>Delivered</button>
-              <button class="spam-btn" onclick="updateStatus('${order._id}', 'spam')" ${order.spam || order.delivered ? 'disabled' : ''}>Spam</button>
+              <button class="deliver-btn" onclick="updateStatus('${order.orderId}', 'deliver')" ${order.delivered || order.spam ? 'disabled' : ''}>Delivered</button>
+              <button class="spam-btn" onclick="updateStatus('${order.orderId}', 'spam')" ${order.spam || order.delivered ? 'disabled' : ''}>Spam</button>
             </td>
           `;
           tbody.appendChild(row);
         });
       } catch (error) {
         document.getElementById('message').textContent = error.message;
-        document.getElementById('message').style.color = '#ff4a3d';
       }
     }
-
     async function updateStatus(orderId, action) {
-      try {
-        const response = await fetch(`/api/orders/${orderId}/${action}`, { method: 'PUT' });
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.error || 'Failed to update status.');
-
-        document.getElementById('message').textContent = result.message;
-        document.getElementById('message').style.color = '#00cc99';
-        fetchOrders();
-      } catch (error) {
-        document.getElementById('message').textContent = error.message;
-        document.getElementById('message').style.color = '#ff4a3d';
-      }
+      await fetch(`/api/orders/${orderId}/${action}`, { method: 'PUT' });
+      fetchOrders();
     }
-
     window.onload = fetchOrders;
   </script>
 </body>
