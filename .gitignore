@@ -1,4 +1,3 @@
 node_modules/
 orders.db
 .env
-orders.csv
