@@ -94,7 +94,7 @@
         phone: document.getElementById('phone').value.trim(),
         address: document.getElementById('address').value.trim(),
         quantity: document.getElementById('quantity').value,
-        orderDate: new Date().toLocaleString(),
+        orderDate: new Date().toISOString(), // Format compatible with MongoDB
       };
 
       try {
