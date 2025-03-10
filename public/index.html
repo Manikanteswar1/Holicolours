@@ -18,6 +18,12 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+    }
+
+    .wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
     }
@@ -49,7 +55,6 @@
       margin-top: 20px;
       border-radius: 5px;
       cursor: pointer;
-      /* Button is not full-width */
     }
 
     button:hover {
@@ -72,10 +77,10 @@
       background: rgba(0, 0, 0, 0.3);
       padding: 10px;
       border-radius: 10px;
-      margin-top: 20px;
       width: 90%;
       max-width: 300px;
       font-size: 12px;
+      margin: 20px auto;
     }
 
     footer a {
@@ -118,29 +123,31 @@
   </style>
 </head>
 <body>
-  <div class="container">
-    <p class="delivery-text">Comfortable Doorstep Delivery</p>
-    <h1>Holi 1/2kg 5-Colour Combo @129Rs/- </h1>
-    <form id="bookingForm">
-      <input type="text" id="name" placeholder="Your Name" required>
-      <input type="tel" id="phone" placeholder="Your Phone Number" pattern="[0-9]{10}" title="Enter a 10-digit phone number" required>
-      <input type="text" id="address" placeholder="Block & Room No (ex: VE-101)" required>
-      <select id="quantity" required>
-        <option value="" disabled selected>Select Quantity</option>
-        <option value="1">1 Combo</option>
-        <option value="2">2 Combos</option>
-        <option value="3">3 Combos</option>
-        <option value="4">4 Combos</option>
-        <option value="5">5 Combos</option>
-      </select>
-      <button type="submit">Book Now</button>
-    </form>
-    <p id="message"></p>
+  <div class="wrapper">
+    <div class="container">
+      <p class="delivery-text">Comfortable Doorstep Delivery</p>
+      <h1>Holi 1/2kg 5-Colour Combo @129Rs/- </h1>
+      <form id="bookingForm">
+        <input type="text" id="name" placeholder="Your Name" required>
+        <input type="tel" id="phone" placeholder="Your Phone Number" pattern="[0-9]{10}" title="Enter a 10-digit phone number" required>
+        <input type="text" id="address" placeholder="Block & Room No (ex: VE-101)" required>
+        <select id="quantity" required>
+          <option value="" disabled selected>Select Quantity</option>
+          <option value="1">1 Combo</option>
+          <option value="2">2 Combos</option>
+          <option value="3">3 Combos</option>
+          <option value="4">4 Combos</option>
+          <option value="5">5 Combos</option>
+        </select>
+        <button type="submit">Book Now</button>
+      </form>
+      <p id="message"></p>
+    </div>
   </div>
 
   <!-- Footer -->
   <footer>
-    <p>Developed by <a >Mani</a> | &copy; 2025 All rights reserved.</p>
+    <p>Developed by <a>Mani</a> | &copy; 2025 All rights reserved.</p>
   </footer>
 
   <script>
