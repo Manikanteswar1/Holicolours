@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>View Holi Orders</title>
   <style>
+    /* General Styles */
     body {
       font-family: Arial, sans-serif;
       background: linear-gradient(135deg, #ff6f61, #ffcc00, #00cc99, #3399ff, #cc33ff);
@@ -15,6 +16,7 @@
       padding: 20px;
       min-height: 100vh;
     }
+
     .container {
       background: rgba(0, 0, 0, 0.7);
       padding: 20px;
@@ -22,36 +24,103 @@
       max-width: 1000px;
       margin: 0 auto;
     }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    /* Table Styles */
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 20px;
     }
+
     th, td {
-      padding: 10px;
+      padding: 12px;
       border: 1px solid #fff;
     }
+
     th {
       background: #ff6f61;
+      font-weight: bold;
     }
+
+    tr:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Button Styles */
     button {
-      padding: 4px 8px;
+      padding: 6px 12px;
       border: none;
-      border-radius: 3px;
+      border-radius: 5px;
       cursor: pointer;
-      margin-top: 10px;
-      font-size: 12px;
+      margin: 4px;
+      font-size: 14px;
+      transition: background 0.3s ease;
     }
-    .deliver-btn { background: #00cc99; }
-    .deliver-btn:hover:not(:disabled) { background: #009973; }
-    .spam-btn { background: #ff4a3d; }
-    .spam-btn:hover:not(:disabled) { background: #cc392f; }
-    button:disabled { background: #666; cursor: not-allowed; }
+
+    .deliver-btn {
+      background: linear-gradient(135deg, #00cc99, #009973);
+      color: white;
+    }
+
+    .deliver-btn:hover:not(:disabled) {
+      background: linear-gradient(135deg, #009973, #007a5c);
+    }
+
+    .spam-btn {
+      background: linear-gradient(135deg, #ff4a3d, #cc392f);
+      color: white;
+    }
+
+    .spam-btn:hover:not(:disabled) {
+      background: linear-gradient(135deg, #cc392f, #a82f26);
+    }
+
+    button:disabled {
+      background: #666;
+      cursor: not-allowed;
+    }
+
+    /* Status Styles */
     .delivered-yes { color: #00cc99; }
     .delivered-no { color: #ff4a3d; }
     .spam-yes { color: #ff4a3d; }
     .spam-no { color: #00cc99; }
-    #message { margin-top: 10px; font-weight: bold; }
+
+    /* Message Styles */
+    #message {
+      margin-top: 20px;
+      font-weight: bold;
+      color: #ff4a3d;
+    }
+
+    /* Loading Spinner */
+    .loader {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #ff6f61;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Responsive Table */
+    @media (max-width: 768px) {
+      table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+    }
   </style>
 </head>
 <body>
@@ -60,32 +129,48 @@
     <table id="ordersTable">
       <thead>
         <tr>
-          <th>Order ID</th> 
+          <th>Order ID</th>
           <th>Name</th>
           <th>Quantity</th>
           <th>Phone</th>
           <th>Address</th>
-          <th>Order Date</th>
+          <th>Actions</th>
           <th>Delivered</th>
           <th>Spam</th>
-          <th>Actions</th>
+          <th>Order Date</th>
         </tr>
       </thead>
-      <tbody id="ordersBody"></tbody>
+      <tbody id="ordersBody">
+        <tr>
+          <td colspan="9">
+            <div class="loader"></div>
+          </td>
+        </tr>
+      </tbody>
     </table>
     <p id="message"></p>
   </div>
 
   <script>
+    // Fetch and display orders
     async function fetchOrders() {
+      const tbody = document.getElementById('ordersBody');
+      const message = document.getElementById('message');
+      tbody.innerHTML = '<tr><td colspan="9"><div class="loader"></div></td></tr>'; // Show loading spinner
+
       try {
         const response = await fetch('/api/orders');
+        if (!response.ok) throw new Error('Failed to fetch orders.');
+
         const orders = await response.json();
-        if (!response.ok) throw new Error(orders.error || 'Failed to fetch orders.');
+        tbody.innerHTML = ''; // Clear loading spinner
 
-        const tbody = document.getElementById('ordersBody');
-        tbody.innerHTML = '';
+        if (orders.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="9">No orders found.</td></tr>';
+          return;
+        }
 
+        // Populate table with orders
         orders.forEach(order => {
           const row = document.createElement('tr');
           row.innerHTML = `
@@ -94,24 +179,39 @@
             <td>${order.quantity}</td>
             <td>${order.phone}</td>
             <td>${order.address}</td>
-            <td>${new Date(order.orderDate).toLocaleString()}</td>
-            <td class="${order.delivered ? 'delivered-yes' : 'delivered-no'}">${order.delivered ? 'Yes' : 'No'}</td>
-            <td class="${order.spam ? 'spam-yes' : 'spam-no'}">${order.spam ? 'Yes' : 'No'}</td>
             <td>
               <button class="deliver-btn" onclick="updateStatus('${order.orderId}', 'deliver')" ${order.delivered || order.spam ? 'disabled' : ''}>Delivered</button>
               <button class="spam-btn" onclick="updateStatus('${order.orderId}', 'spam')" ${order.spam || order.delivered ? 'disabled' : ''}>Spam</button>
             </td>
+            <td class="${order.delivered ? 'delivered-yes' : 'delivered-no'}">${order.delivered ? 'Yes' : 'No'}</td>
+            <td class="${order.spam ? 'spam-yes' : 'spam-no'}">${order.spam ? 'Yes' : 'No'}</td>
+            <td>${new Date(order.orderDate).toLocaleString()}</td>
           `;
           tbody.appendChild(row);
         });
       } catch (error) {
-        document.getElementById('message').textContent = error.message;
+        tbody.innerHTML = '<tr><td colspan="9">Failed to load orders.</td></tr>';
+        message.textContent = error.message;
       }
     }
+
+    // Update order status (Delivered or Spam)
     async function updateStatus(orderId, action) {
-      await fetch(`/api/orders/${orderId}/${action}`, { method: 'PUT' });
-      fetchOrders();
+      const message = document.getElementById('message');
+      message.textContent = ''; // Clear previous messages
+
+      try {
+        const response = await fetch(`/api/orders/${orderId}/${action}`, { method: 'PUT' });
+        if (!response.ok) throw new Error('Failed to update order status.');
+
+        // Refresh the orders table
+        fetchOrders();
+      } catch (error) {
+        message.textContent = error.message;
+      }
     }
+
+    // Fetch orders when the page loads
     window.onload = fetchOrders;
   </script>
 </body>
