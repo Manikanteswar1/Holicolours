@@ -9,7 +9,7 @@
     body {
       font-family: Arial, sans-serif;
       background: linear-gradient(135deg, #ff6f61, #ffcc00, #00cc99, #3399ff, #cc33ff);
-      background-size: 400% 400%; /* Increase size for smooth animation */
+      background-size: cover;
       background-attachment: fixed;
       color: white;
       text-align: center;
@@ -18,19 +18,6 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      animation: gradientAnimation 15s ease infinite; /* Add animation */
-    }
-
-    @keyframes gradientAnimation {
-      0% {
-        background-position: 0% 50%;
-      }
-      50% {
-        background-position: 100% 50%;
-      }
-      100% {
-        background-position: 0% 50%;
-      }
     }
 
     .wrapper {
