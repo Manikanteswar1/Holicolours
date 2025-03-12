@@ -35,6 +35,8 @@
       margin-bottom: 20px;
       max-width: 400px;
       width: 90%;
+      position: relative; /* For confetti positioning */
+      overflow: hidden;   /* Keep confetti inside container */
     }
 
     input, select {
@@ -71,13 +73,34 @@
       margin-bottom: 10px;
     }
 
-    .contact-note {
-      font-size: 14px;
-      font-weight: bold;
-      color: rgb(255, 255, 255);
-      margin-top: 10px;
+    .contact-note a {
+      color: rgb(218, 218, 96);
+      text-decoration: none;
+      font-weight: 600;
     }
-
+    
+    /* New styles for title and price */
+    .product-title {
+      font-size: 24px;
+      margin-bottom: 5px;
+    }
+    
+    .price-tag {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      padding: 15px;
+      margin: 20px 0;
+      border-left: 3px solid #f65c5c;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .price-amount {
+      font-size: 20px;
+      font-weight: 700;
+      color: #ffffff;
+    }
     /* Footer Styles */
     footer {
       background: rgba(0, 0, 0, 0.3);
@@ -90,7 +113,7 @@
     }
 
     footer a {
-      color: #ff6f61;
+      color: #7de660;
       text-decoration: none;
     }
 
@@ -100,8 +123,12 @@
 
     /* Mobile Responsiveness */
     @media (max-width: 480px) {
-      h1 {
-        font-size: 24px;
+      .product-title {
+        font-size: 20px;
+      }
+      
+      .product-price {
+        font-size: 18px;
       }
 
       .delivery-text {
@@ -127,13 +154,98 @@
         margin-bottom: 50px;
       }
     }
+    
+    /* Color Dots */
+    .color-dots {
+      display: flex;
+      justify-content: center;
+      margin: 15px 0;
+    }
+    
+    .dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      margin: 0 7px;
+      animation: float 3s infinite ease-in-out alternate;
+    }
+    
+    .dot:nth-child(1) {
+      background: #ff29b0;
+      animation-delay: 0s;
+    }
+    
+    .dot:nth-child(2) {
+      background: #ffcc00;
+      animation-delay: 0.3s;
+    }
+    
+    .dot:nth-child(3) {
+      background: #00cc99;
+      animation-delay: 0.6s;
+    }
+    
+    .dot:nth-child(4) {
+      background: #3399ff;
+      animation-delay: 0.9s;
+    }
+    
+    .dot:nth-child(5) {
+      background: #16a816; /* Dark green instead of purple */
+      animation-delay: 1.2s;
+    }
+    
+    @keyframes float {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-8px); }
+    }
+    
+    /* Confetti/Sprinkles Animation */
+    .sprinkle {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background-color: #ff6f61;
+      border-radius: 50%;
+      top: -10px;
+      z-index: 100;
+      opacity: 0;
+      animation: fall linear forwards;
+    }
+    
+    @keyframes fall {
+      0% {
+        opacity: 1;
+        transform: translateY(0) rotate(0deg);
+      }
+      100% {
+        opacity: 0.7;
+        transform: translateY(450px) rotate(90deg);
+      }
+    }
   </style>
 </head>
 <body>
   <div class="wrapper">
     <div class="container">
       <p class="delivery-text">Comfortable Door Delivery</p>
-      <h1>Holi 1/2kg 5-Colour Combo @119Rs/- </h1>
+      
+      <!-- Color dots -->
+      <div class="color-dots">
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+      
+      <!-- Modified title and price layout -->
+      <h1 class="product-title">Holi 1/2kg 5-Colour Combo</h1>
+      <div class="price-tag">
+        <span>Grab your combo at just</span>
+        <span class="price-amount">₹119</span>
+      </div>
+      
       <form id="bookingForm">
         <input type="text" id="name" placeholder="Your Name" required>
         <input type="tel" id="phone" placeholder="Your Phone Number" pattern="[0-9]{10}" title="Enter a 10-digit phone number" required>
@@ -152,8 +264,10 @@
     </div>
 
     <!-- Contact Note Below Container -->
-    <p class="contact-note">If you are unable to place an order, contact <strong><a href="tel:7382414186" style="color: rgb(218, 218, 96); text-decoration: none;">7382414186</a>
-    </strong>.</p>
+    <div class="contact-note">
+      Having trouble? Contact us at <a href="tel:7382414186">7382414186</a>
+    </div>
+    
   </div>
 
   <!-- Footer -->
@@ -167,6 +281,40 @@
       messageElement.textContent = message;
       messageElement.style.color = isError ? '#ff4a3d' : '#00cc99';
       setTimeout(() => messageElement.textContent = '', 30000);
+    }
+    
+    // Function to create sprinkles animation - party emoji removed
+    function createSprinkles() {
+      const container = document.querySelector('.container');
+      const containerWidth = container.offsetWidth;
+      const colors = ['#ff29b0', '#ffcc00', '#00cc99', '#3399ff', '#16a816', '#ff6f61'];
+      
+      // Create sprinkles
+      for (let i = 0; i < 50; i++) {
+        setTimeout(() => {
+          const sprinkle = document.createElement('div');
+          sprinkle.className = 'sprinkle';
+          
+          // Random position, color, size, and animation duration
+          const size = 3 + Math.random() * 7;
+          const posX = Math.random() * containerWidth;
+          const duration = 1 + Math.random() * 2;
+          const color = colors[Math.floor(Math.random() * colors.length)];
+          
+          sprinkle.style.left = `${posX}px`;
+          sprinkle.style.width = `${size}px`;
+          sprinkle.style.height = `${size}px`;
+          sprinkle.style.backgroundColor = color;
+          sprinkle.style.animationDuration = `${duration}s`;
+          
+          container.appendChild(sprinkle);
+          
+          // Remove sprinkle after animation completes
+          setTimeout(() => {
+            sprinkle.remove();
+          }, duration * 1000);
+        }, i * 50);
+      }
     }
 
     document.getElementById('bookingForm').addEventListener('submit', async (e) => {
@@ -191,6 +339,8 @@
         if (response.ok) {
           displayMessage(result.message);
           document.getElementById('bookingForm').reset();
+          // Trigger sprinkles animation on successful order
+          createSprinkles();
         } else {
           displayMessage(result.error || 'Something went wrong.', true);
         }
