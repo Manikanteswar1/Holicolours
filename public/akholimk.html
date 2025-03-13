@@ -37,6 +37,8 @@
       padding: 10px;
       background: rgba(255, 255, 255, 0.1);
       border-radius: 10px;
+      flex-wrap: wrap; /* Wrap items on smaller screens */
+      gap: 10px; /* Add spacing between items */
     }
 
     .summary div {
@@ -45,6 +47,7 @@
       border-radius: 5px;
       font-weight: bold;
       text-align: center;
+      min-width: 150px; /* Minimum width for each item */
     }
 
     .summary .delivered {
@@ -57,6 +60,10 @@
 
     .summary .pending {
       color: #ffcc00;
+    }
+
+    .summary .total-combos {
+      color: #3399ff;
     }
 
     /* Table Styles */
@@ -153,7 +160,6 @@
 
       .summary {
         flex-direction: column; /* Stack vertically on small screens */
-        gap: 10px;
       }
     }
   </style>
@@ -167,6 +173,7 @@
       <div class="delivered">Delivered: <span id="deliveredCount">0</span></div>
       <div class="spam">Spam: <span id="spamCount">0</span></div>
       <div class="pending">Pending: <span id="pendingCount">0</span></div>
+      <div class="total-combos">Total Combos Delivered: <span id="totalCombosCount">0</span></div>
     </div>
 
     <!-- Orders Table -->
@@ -218,6 +225,7 @@
         let deliveredCount = 0;
         let spamCount = 0;
         let pendingCount = 0;
+        let totalCombosCount = 0;
 
         // Populate table with orders
         orders.forEach(order => {
@@ -239,15 +247,21 @@
           tbody.appendChild(row);
 
           // Update counters
-          if (order.delivered) deliveredCount++;
-          else if (order.spam) spamCount++;
-          else pendingCount++;
+          if (order.delivered) {
+            deliveredCount++;
+            totalCombosCount += parseInt(order.quantity); // Add quantity to total combos
+          } else if (order.spam) {
+            spamCount++;
+          } else {
+            pendingCount++;
+          }
         });
 
         // Update summary
         document.getElementById('deliveredCount').textContent = deliveredCount;
         document.getElementById('spamCount').textContent = spamCount;
         document.getElementById('pendingCount').textContent = pendingCount;
+        document.getElementById('totalCombosCount').textContent = totalCombosCount;
       } catch (error) {
         tbody.innerHTML = '<tr><td colspan="9">Failed to load orders.</td></tr>';
         message.textContent = error.message;
