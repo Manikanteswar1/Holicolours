@@ -29,6 +29,36 @@
       margin-bottom: 20px;
     }
 
+    /* Summary Styles */
+    .summary {
+      display: flex;
+      justify-content: space-between; /* Arrange items side by side */
+      margin-bottom: 20px;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+    }
+
+    .summary div {
+      flex: 1; /* Equal width for all items */
+      padding: 10px;
+      border-radius: 5px;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .summary .delivered {
+      color: #00cc99;
+    }
+
+    .summary .spam {
+      color: #ff4a3d;
+    }
+
+    .summary .pending {
+      color: #ffcc00;
+    }
+
     /* Table Styles */
     table {
       width: 100%;
@@ -120,12 +150,26 @@
         overflow-x: auto;
         white-space: nowrap;
       }
+
+      .summary {
+        flex-direction: column; /* Stack vertically on small screens */
+        gap: 10px;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Holi Orders</h1>
+
+    <!-- Summary Section -->
+    <div class="summary">
+      <div class="delivered">Delivered: <span id="deliveredCount">0</span></div>
+      <div class="spam">Spam: <span id="spamCount">0</span></div>
+      <div class="pending">Pending: <span id="pendingCount">0</span></div>
+    </div>
+
+    <!-- Orders Table -->
     <table id="ordersTable">
       <thead>
         <tr>
@@ -170,6 +214,11 @@
           return;
         }
 
+        // Counters for summary
+        let deliveredCount = 0;
+        let spamCount = 0;
+        let pendingCount = 0;
+
         // Populate table with orders
         orders.forEach(order => {
           const row = document.createElement('tr');
@@ -188,7 +237,17 @@
             <td>${new Date(order.orderDate).toLocaleString()}</td>
           `;
           tbody.appendChild(row);
+
+          // Update counters
+          if (order.delivered) deliveredCount++;
+          else if (order.spam) spamCount++;
+          else pendingCount++;
         });
+
+        // Update summary
+        document.getElementById('deliveredCount').textContent = deliveredCount;
+        document.getElementById('spamCount').textContent = spamCount;
+        document.getElementById('pendingCount').textContent = pendingCount;
       } catch (error) {
         tbody.innerHTML = '<tr><td colspan="9">Failed to load orders.</td></tr>';
         message.textContent = error.message;
