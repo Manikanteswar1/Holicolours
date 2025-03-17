@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>View Holi Orders</title>
   <style>
-    /* General Styles */
     body {
       font-family: Arial, sans-serif;
       background: linear-gradient(135deg, #ff6f61, #ffcc00, #00cc99, #3399ff, #cc33ff);
@@ -29,44 +28,31 @@
       margin-bottom: 20px;
     }
 
-    /* Summary Styles */
     .summary {
       display: flex;
-      justify-content: space-between; /* Arrange items side by side */
+      justify-content: space-between;
       margin-bottom: 20px;
       padding: 10px;
       background: rgba(255, 255, 255, 0.1);
       border-radius: 10px;
-      flex-wrap: wrap; /* Wrap items on smaller screens */
-      gap: 10px; /* Add spacing between items */
+      flex-wrap: wrap;
+      gap: 10px;
     }
 
     .summary div {
-      flex: 1; /* Equal width for all items */
+      flex: 1;
       padding: 10px;
       border-radius: 5px;
       font-weight: bold;
       text-align: center;
-      min-width: 150px; /* Minimum width for each item */
+      min-width: 150px;
     }
 
-    .summary .delivered {
-      color: #00cc99;
-    }
+    .summary .delivered { color: #00cc99; }
+    .summary .spam { color: #ff4a3d; }
+    .summary .pending { color: #ffcc00; }
+    .summary .total-combos { color: #3399ff; }
 
-    .summary .spam {
-      color: #ff4a3d;
-    }
-
-    .summary .pending {
-      color: #ffcc00;
-    }
-
-    .summary .total-combos {
-      color: #3399ff;
-    }
-
-    /* Table Styles */
     table {
       width: 100%;
       border-collapse: collapse;
@@ -87,7 +73,6 @@
       background: rgba(255, 255, 255, 0.1);
     }
 
-    /* Button Styles */
     button {
       padding: 6px 12px;
       border: none;
@@ -121,20 +106,31 @@
       cursor: not-allowed;
     }
 
-    /* Status Styles */
+    .toggle-btn {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin-bottom: 20px;
+    }
+
+    .taking-orders {
+      background: linear-gradient(135deg, #00cc99, #009973);
+    }
+
+    .not-taking-orders {
+      background: linear-gradient(135deg, #ff4a3d, #cc392f);
+    }
+
     .delivered-yes { color: #00cc99; }
     .delivered-no { color: #ff4a3d; }
     .spam-yes { color: #ff4a3d; }
     .spam-no { color: #00cc99; }
 
-    /* Message Styles */
     #message {
       margin-top: 20px;
       font-weight: bold;
       color: #ff4a3d;
     }
 
-    /* Loading Spinner */
     .loader {
       border: 4px solid #f3f3f3;
       border-top: 4px solid #ff6f61;
@@ -150,7 +146,6 @@
       100% { transform: rotate(360deg); }
     }
 
-    /* Responsive Table */
     @media (max-width: 768px) {
       table {
         display: block;
@@ -159,7 +154,7 @@
       }
 
       .summary {
-        flex-direction: column; /* Stack vertically on small screens */
+        flex-direction: column;
       }
     }
   </style>
@@ -167,8 +162,9 @@
 <body>
   <div class="container">
     <h1>Holi Orders</h1>
+    
+    <button id="toggleOrdersBtn" class="toggle-btn">Loading...</button>
 
-    <!-- Summary Section -->
     <div class="summary">
       <div class="delivered">Delivered: <span id="deliveredCount">0</span></div>
       <div class="spam">Spam: <span id="spamCount">0</span></div>
@@ -176,7 +172,6 @@
       <div class="total-combos">Total Combos Delivered: <span id="totalCombosCount">0</span></div>
     </div>
 
-    <!-- Orders Table -->
     <table id="ordersTable">
       <thead>
         <tr>
@@ -203,31 +198,28 @@
   </div>
 
   <script>
-    // Fetch and display orders
     async function fetchOrders() {
       const tbody = document.getElementById('ordersBody');
       const message = document.getElementById('message');
-      tbody.innerHTML = '<tr><td colspan="9"><div class="loader"></div></td></tr>'; // Show loading spinner
+      tbody.innerHTML = '<tr><td colspan="9"><div class="loader"></div></td></tr>';
 
       try {
         const response = await fetch('/api/orders');
         if (!response.ok) throw new Error('Failed to fetch orders.');
 
         const orders = await response.json();
-        tbody.innerHTML = ''; // Clear loading spinner
+        tbody.innerHTML = '';
 
         if (orders.length === 0) {
           tbody.innerHTML = '<tr><td colspan="9">No orders found.</td></tr>';
           return;
         }
 
-        // Counters for summary
         let deliveredCount = 0;
         let spamCount = 0;
         let pendingCount = 0;
         let totalCombosCount = 0;
 
-        // Populate table with orders
         orders.forEach(order => {
           const row = document.createElement('tr');
           row.innerHTML = `
@@ -246,10 +238,9 @@
           `;
           tbody.appendChild(row);
 
-          // Update counters
           if (order.delivered) {
             deliveredCount++;
-            totalCombosCount += parseInt(order.quantity); // Add quantity to total combos
+            totalCombosCount += parseInt(order.quantity);
           } else if (order.spam) {
             spamCount++;
           } else {
@@ -257,7 +248,6 @@
           }
         });
 
-        // Update summary
         document.getElementById('deliveredCount').textContent = deliveredCount;
         document.getElementById('spamCount').textContent = spamCount;
         document.getElementById('pendingCount').textContent = pendingCount;
@@ -268,24 +258,83 @@
       }
     }
 
-    // Update order status (Delivered or Spam)
     async function updateStatus(orderId, action) {
       const message = document.getElementById('message');
-      message.textContent = ''; // Clear previous messages
+      message.textContent = '';
 
       try {
         const response = await fetch(`/api/orders/${orderId}/${action}`, { method: 'PUT' });
         if (!response.ok) throw new Error('Failed to update order status.');
 
-        // Refresh the orders table
         fetchOrders();
       } catch (error) {
         message.textContent = error.message;
       }
     }
 
-    // Fetch orders when the page loads
-    window.onload = fetchOrders;
+    async function updateOrderToggleButton() {
+      const toggleBtn = document.getElementById('toggleOrdersBtn');
+      try {
+        const response = await fetch('/api/order-status');
+        const { isTakingOrders } = await response.json();
+        
+        toggleBtn.textContent = isTakingOrders ? 'Stop Taking Orders' : 'Start Taking Orders';
+        toggleBtn.className = `toggle-btn ${isTakingOrders ? 'taking-orders' : 'not-taking-orders'}`;
+      } catch (error) {
+        toggleBtn.textContent = 'Error Loading Status';
+      }
+    }
+
+    async function toggleOrderStatus() {
+      const toggleBtn = document.getElementById('toggleOrdersBtn');
+      const message = document.getElementById('message');
+      try {
+        const response = await fetch('/api/order-status');
+        const { isTakingOrders } = await response.json();
+        
+        const newStatus = !isTakingOrders;
+        const updateResponse = await fetch('/api/order-status', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ isTakingOrders: newStatus })
+        });
+
+        if (!updateResponse.ok) throw new Error('Failed to update order status');
+        
+        await updateOrderToggleButton();
+        message.textContent = `Orders are now ${newStatus ? 'being accepted' : 'not being accepted'}`;
+        message.style.color = '#00cc99';
+      } catch (error) {
+        message.textContent = 'Failed to toggle order status';
+        message.style.color = '#ff4a3d';
+      }
+    }
+
+    // Setup SSE for real-time order updates
+    function setupOrderUpdates() {
+      const source = new EventSource('/api/order-updates');
+      
+      source.addEventListener('newOrder', (event) => {
+        console.log('New order received:', event.data);
+        fetchOrders(); // Reload orders when a new order is placed
+      });
+
+      source.onerror = () => {
+        console.error('SSE connection error');
+        document.getElementById('message').textContent = 'Lost connection to updates. Please refresh.';
+        source.close();
+        // Attempt to reconnect after a delay
+        setTimeout(setupOrderUpdates, 2000);
+      };
+    }
+
+    document.getElementById('toggleOrdersBtn').addEventListener('click', toggleOrderStatus);
+
+    window.onload = () => {
+      fetchOrders();
+      updateOrderToggleButton();
+      setupOrderUpdates(); // Start listening for new orders
+    };
   </script>
 </body>
 </html>

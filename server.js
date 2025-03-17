@@ -30,9 +30,16 @@ const orderSchema = new mongoose.Schema({
   spam: { type: Boolean, default: false }
 });
 
-const Order = mongoose.model('Order', orderSchema);
+// Order Status Schema
+const orderStatusSchema = new mongoose.Schema({
+  _id: { type: String, default: 'orderStatus' },
+  isTakingOrders: { type: Boolean, default: true }
+});
 
-// Counter Schema for Auto-Incrementing Order ID
+const Order = mongoose.model('Order', orderSchema);
+const OrderStatus = mongoose.model('OrderStatus', orderStatusSchema);
+
+// Counter Schema
 const counterSchema = new mongoose.Schema({
   _id: String,
   sequence_value: Number
@@ -40,16 +47,21 @@ const counterSchema = new mongoose.Schema({
 
 const Counter = mongoose.model('Counter', counterSchema);
 
-// Initialize Counter if Not Exists
+// Initialize Counter and Order Status
 async function initializeCounter() {
   const counter = await Counter.findById('orderId');
-  if (!counter) {
-    await new Counter({ _id: 'orderId', sequence_value: 0 }).save();
-  }
+  if (!counter) await new Counter({ _id: 'orderId', sequence_value: 0 }).save();
 }
-initializeCounter();
 
-// Function to Get Next Order ID
+async function initializeOrderStatus() {
+  const status = await OrderStatus.findById('orderStatus');
+  if (!status) await new OrderStatus({ _id: 'orderStatus', isTakingOrders: true }).save();
+}
+
+initializeCounter();
+initializeOrderStatus();
+
+// Get Next Order ID
 async function getNextOrderId() {
   const counter = await Counter.findByIdAndUpdate(
     'orderId',
@@ -59,9 +71,63 @@ async function getNextOrderId() {
   return counter.sequence_value;
 }
 
+// SSE Setup
+const clients = new Set();
+
+app.get('/api/order-updates', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders();
+
+  const client = { res };
+  clients.add(client);
+
+  req.on('close', () => {
+    clients.delete(client);
+    res.end();
+  });
+});
+
+function notifyClients(event, data) {
+  for (const client of clients) {
+    client.res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+  }
+}
+
+// Get Order Status
+app.get('/api/order-status', async (req, res) => {
+  try {
+    const status = await OrderStatus.findById('orderStatus');
+    res.json({ isTakingOrders: status.isTakingOrders });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch order status.' });
+  }
+});
+
+// Toggle Order Status
+app.put('/api/order-status', async (req, res) => {
+  try {
+    const { isTakingOrders } = req.body;
+    const status = await OrderStatus.findByIdAndUpdate(
+      'orderStatus',
+      { isTakingOrders },
+      { new: true, upsert: true }
+    );
+    res.json({ message: 'Order status updated', isTakingOrders: status.isTakingOrders });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update order status.' });
+  }
+});
+
 // Place an Order
 app.post('/api/order', async (req, res) => {
   try {
+    const status = await OrderStatus.findById('orderStatus');
+    if (!status.isTakingOrders) {
+      return res.status(403).json({ error: 'We are currently not taking orders.' });
+    }
+
     const { name, quantity, phone, address, orderDate } = req.body;
     if (!name || !phone || !address || !quantity || !orderDate) {
       return res.status(400).json({ error: 'All fields are required.' });
@@ -69,6 +135,9 @@ app.post('/api/order', async (req, res) => {
     const orderId = await getNextOrderId();
     const order = new Order({ orderId, name, quantity, phone, address, orderDate });
     await order.save();
+
+    // Notify all connected clients of the new order
+    notifyClients('newOrder', { orderId });
 
     res.status(201).json({ message: 'Order placed successfully! We will contact you Soon.', orderId });
   } catch (err) {
@@ -80,14 +149,14 @@ app.post('/api/order', async (req, res) => {
 // Get All Orders
 app.get('/api/orders', async (req, res) => {
   try {
-    const orders = await Order.find().sort({ orderId: 1 });
+    const orders = await Order.find().sort({ orderDate: -1 }); // Sort by latest first
     res.json(orders);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch orders.' });
   }
 });
 
-// Update Order Status (Delivered or Spam)
+// Update Order Status
 app.put('/api/orders/:id/:action', async (req, res) => {
   try {
     const { id, action } = req.params;
@@ -108,11 +177,9 @@ app.put('/api/orders/:id/:action', async (req, res) => {
 // Generate CSV Backup
 app.get('/api/orders/backup', async (req, res) => {
   try {
-    const orders = await Order.find().sort({ orderId: 1 });
-
-    // Define CSV writer
+    const orders = await Order.find().sort({ orderDate: -1 });
     const csvWriter = createCsvWriter({
-      path: 'orders_backup.csv', // Always write to the same file
+      path: 'orders_backup.csv',
       header: [
         { id: 'orderId', title: 'Order ID' },
         { id: 'name', title: 'Name' },
@@ -126,21 +193,13 @@ app.get('/api/orders/backup', async (req, res) => {
       ]
     });
 
-    // Write orders to CSV (overwrites the file)
     await csvWriter.writeRecords(orders);
-
-    // Send the CSV file as a download
     res.download('orders_backup.csv', 'orders_backup.csv', (err) => {
-      if (err) {
-        console.error('Error sending CSV file:', err);
-        res.status(500).json({ error: 'Failed to download CSV file.' });
-      }
+      if (err) res.status(500).json({ error: 'Failed to download CSV file.' });
     });
   } catch (err) {
-    console.error('Error generating CSV backup:', err);
     res.status(500).json({ error: 'Failed to generate CSV backup.' });
   }
 });
 
-// Start the server
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));

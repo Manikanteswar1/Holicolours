@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Holi Colours</title>
   <style>
-    /* General Styles */
+    /* Same styles as before */
     body {
       font-family: Arial, sans-serif;
       background: linear-gradient(135deg, #ff6f61, #ffcc00, #00cc99, #3399ff, #cc33ff);
@@ -35,8 +35,8 @@
       margin-bottom: 20px;
       max-width: 400px;
       width: 90%;
-      position: relative; /* For confetti positioning */
-      overflow: hidden;   /* Keep confetti inside container */
+      position: relative;
+      overflow: hidden;
     }
 
     input, select {
@@ -79,7 +79,6 @@
       font-weight: 600;
     }
     
-    /* New styles for title and price */
     .product-title {
       font-size: 24px;
       margin-bottom: 5px;
@@ -101,7 +100,7 @@
       font-weight: 700;
       color: #ffffff;
     }
-    /* Footer Styles */
+
     footer {
       background: rgba(0, 0, 0, 0.3);
       padding: 10px;
@@ -121,7 +120,6 @@
       text-decoration: underline;
     }
 
-    /* Mobile Responsiveness */
     @media (max-width: 480px) {
       .product-title {
         font-size: 20px;
@@ -155,7 +153,6 @@
       }
     }
     
-    /* Color Dots */
     .color-dots {
       display: flex;
       justify-content: center;
@@ -170,37 +167,17 @@
       animation: float 3s infinite ease-in-out alternate;
     }
     
-    .dot:nth-child(1) {
-      background: #ff29b0;
-      animation-delay: 0s;
-    }
-    
-    .dot:nth-child(2) {
-      background: #ffcc00;
-      animation-delay: 0.3s;
-    }
-    
-    .dot:nth-child(3) {
-      background: #00cc99;
-      animation-delay: 0.6s;
-    }
-    
-    .dot:nth-child(4) {
-      background: #3399ff;
-      animation-delay: 0.9s;
-    }
-    
-    .dot:nth-child(5) {
-      background: #16a816; /* Dark green instead of purple */
-      animation-delay: 1.2s;
-    }
+    .dot:nth-child(1) { background: #ff29b0; animation-delay: 0s; }
+    .dot:nth-child(2) { background: #ffcc00; animation-delay: 0.3s; }
+    .dot:nth-child(3) { background: #00cc99; animation-delay: 0.6s; }
+    .dot:nth-child(4) { background: #3399ff; animation-delay: 0.9s; }
+    .dot:nth-child(5) { background: #16a816; animation-delay: 1.2s; }
     
     @keyframes float {
       0% { transform: translateY(0); }
       100% { transform: translateY(-8px); }
     }
     
-    /* Confetti/Sprinkles Animation */
     .sprinkle {
       position: absolute;
       width: 8px;
@@ -214,14 +191,27 @@
     }
     
     @keyframes fall {
-      0% {
-        opacity: 1;
-        transform: translateY(0) rotate(0deg);
-      }
-      100% {
-        opacity: 0.7;
-        transform: translateY(450px) rotate(90deg);
-      }
+      0% { opacity: 1; transform: translateY(0) rotate(0deg); }
+      100% { opacity: 0.7; transform: translateY(450px) rotate(90deg); }
+    }
+
+    /* Enhanced style for closed message */
+    .closed-message {
+      font-size: 24px;
+      color: #ff4a3d;
+      margin: 20px 0;
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      border-left: 4px solid #ff4a3d;
+      text-align: center;
+      font-weight: bold;
+    }
+    
+    .closed-icon {
+      font-size: 28px;
+      margin-bottom: 10px;
+      display: block;
     }
   </style>
 </head>
@@ -230,7 +220,6 @@
     <div class="container">
       <p class="delivery-text">Comfortable Door Delivery</p>
       
-      <!-- Color dots -->
       <div class="color-dots">
         <div class="dot"></div>
         <div class="dot"></div>
@@ -239,40 +228,26 @@
         <div class="dot"></div>
       </div>
       
-      <!-- Modified title and price layout -->
       <h1 class="product-title">Holi 1/2kg 5-Colour Combo</h1>
       <div class="price-tag">
         <span>Grab your combo at just</span>
         <span class="price-amount">₹119</span>
       </div>
       
-      <form id="bookingForm">
-        <input type="text" id="name" placeholder="Your Name" required>
-        <input type="tel" id="phone" placeholder="Your Phone Number" pattern="[0-9]{10}" title="Enter a 10-digit phone number" required>
-        <input type="text" id="address" placeholder="Block-Room No (ex: VE-101)" required>
-        <select id="quantity" required>
-          <option value="" disabled selected>Select Quantity</option>
-          <option value="1">1 Combo</option>
-          <option value="2">2 Combos</option>
-          <option value="3">3 Combos</option>
-          <option value="4">4 Combos</option>
-          <option value="5">5 Combos</option>
-        </select>
-        <button type="submit">Book Now</button>
-      </form>
+      <div id="orderContent">
+        <!-- Content will be dynamically loaded -->
+      </div>
+      
       <p id="message"></p>
     </div>
 
-    <!-- Contact Note Below Container -->
     <div class="contact-note">
-      Having trouble? Contact us at <a href="tel:7382414186">7382414186</a>
+      Having trouble? Contact us at <a href="tel:9999999999">9999999999</a>
     </div>
-    
   </div>
 
-  <!-- Footer -->
   <footer>
-    <p>Developed by <a>Mani</a> | &copy; 2025 All rights reserved.</p>
+    <p>Developed by <a>Mani</a> | © 2025 All rights reserved.</p>
   </footer>
 
   <script>
@@ -283,19 +258,16 @@
       setTimeout(() => messageElement.textContent = '', 30000);
     }
     
-    // Function to create sprinkles animation - party emoji removed
     function createSprinkles() {
       const container = document.querySelector('.container');
       const containerWidth = container.offsetWidth;
       const colors = ['#ff29b0', '#ffcc00', '#00cc99', '#3399ff', '#16a816', '#ff6f61'];
       
-      // Create sprinkles
       for (let i = 0; i < 50; i++) {
         setTimeout(() => {
           const sprinkle = document.createElement('div');
           sprinkle.className = 'sprinkle';
           
-          // Random position, color, size, and animation duration
           const size = 3 + Math.random() * 7;
           const posX = Math.random() * containerWidth;
           const duration = 1 + Math.random() * 2;
@@ -309,46 +281,82 @@
           
           container.appendChild(sprinkle);
           
-          // Remove sprinkle after animation completes
-          setTimeout(() => {
-            sprinkle.remove();
-          }, duration * 1000);
+          setTimeout(() => sprinkle.remove(), duration * 1000);
         }, i * 50);
       }
     }
 
-    document.getElementById('bookingForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const order = {
-        name: document.getElementById('name').value.trim(),
-        phone: document.getElementById('phone').value.trim(),
-        address: document.getElementById('address').value.trim(),
-        quantity: document.getElementById('quantity').value,
-        orderDate: new Date().toISOString(), // Format compatible with MongoDB
-      };
-
+    async function checkOrderStatus() {
+      const orderContent = document.getElementById('orderContent');
       try {
-        const response = await fetch('/api/order', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(order),
-        });
+        const response = await fetch('/api/order-status');
+        const { isTakingOrders } = await response.json();
 
-        const result = await response.json();
-        if (response.ok) {
-          displayMessage(result.message);
-          document.getElementById('bookingForm').reset();
-          // Trigger sprinkles animation on successful order
-          createSprinkles();
+        if (isTakingOrders) {
+          orderContent.innerHTML = `
+            <form id="bookingForm">
+              <input type="text" id="name" placeholder="Your Name" required>
+              <input type="tel" id="phone" placeholder="Your Phone Number" pattern="[0-9]{10}" title="Enter a 10-digit phone number" required>
+              <input type="text" id="address" placeholder="Block-Room No (ex: VE-101)" required>
+              <select id="quantity" required>
+                <option value="" disabled selected>Select Quantity</option>
+                <option value="1">1 Combo</option>
+                <option value="2">2 Combos</option>
+                <option value="3">3 Combos</option>
+                <option value="4">4 Combos</option>
+                <option value="5">5 Combos</option>
+              </select>
+              <button type="submit">Book Now</button>
+            </form>
+          `;
+
+          document.getElementById('bookingForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const order = {
+              name: document.getElementById('name').value.trim(),
+              phone: document.getElementById('phone').value.trim(),
+              address: document.getElementById('address').value.trim(),
+              quantity: document.getElementById('quantity').value,
+              orderDate: new Date().toISOString(),
+            };
+
+            try {
+              const response = await fetch('/api/order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(order),
+              });
+
+              const result = await response.json();
+              if (response.ok) {
+                displayMessage(result.message);
+                document.getElementById('bookingForm').reset();
+                createSprinkles();
+              } else {
+                displayMessage(result.error || 'Something went wrong.', true);
+              }
+            } catch (error) {
+              displayMessage('Network error. Please try again.', true);
+              console.error('Error:', error);
+            }
+          });
         } else {
-          displayMessage(result.error || 'Something went wrong.', true);
+          // Simple but visually improved closed message
+          orderContent.innerHTML = `
+            <div class="closed-message">
+              <span class="closed-icon">⏱️</span>
+              We are currently not taking orders
+            </div>
+          `;
         }
       } catch (error) {
-        displayMessage('Network error. Please try again.', true);
-        console.error('Error:', error);
+        displayMessage('Failed to load order status.', true);
       }
-    });
+    }
+
+    // Check order status when page loads
+    window.onload = checkOrderStatus;
   </script>
 </body>
 </html>
